@@ -1911,6 +1911,9 @@
     "IslandSeasonTask": {
       "TaskDict": null
     },
+    "IslandTechnology": {
+      "TechnologyStatus": null
+    },
     "Storage": {
       "Storage": {}
     }
