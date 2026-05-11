@@ -42,7 +42,7 @@ class IslandItemExtractor:
 
         data = LOADER.load('sharecfg/island_item_data_template.lua', keyword='pg.base.island_item_data_template')
         for index, item in data.items():
-            if not isinstance(index, int) or 0 < index < 1000 or index > 100000:
+            if not isinstance(index, int) or 1 < index < 1000 or index > 100000:
                 continue
 
             self.item[item['id']] = IslandItem(item).encode()
@@ -61,7 +61,7 @@ class IslandItemExtractor:
         data = LOADER.load('sharecfg/island_item_data_template.lua', keyword='pg.base.island_item_data_template')
         out = {}
         for index, item in data.items():
-            if not isinstance(index, int) or 0 < index < 1000 or index > 100000:
+            if not isinstance(index, int) or 1 < index < 1000 or index > 100000:
                 continue
             out[item['id']] = item['name']
 
