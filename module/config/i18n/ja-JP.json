@@ -262,6 +262,10 @@
       "name": "Task.IslandInfo.name",
       "help": "Task.IslandInfo.help"
     },
+    "IslandFreebie": {
+      "name": "Task.IslandFreebie.name",
+      "help": "Task.IslandFreebie.help"
+    },
     "IslandSeasonTask": {
       "name": "Task.IslandSeasonTask.name",
       "help": "Task.IslandSeasonTask.help"
@@ -2583,6 +2587,16 @@
     "TechnologyStatus": {
       "name": "IslandTechnology.TechnologyStatus.name",
       "help": "IslandTechnology.TechnologyStatus.help"
+    }
+  },
+  "IslandFreebie": {
+    "_info": {
+      "name": "IslandFreebie._info.name",
+      "help": "IslandFreebie._info.help"
+    },
+    "Share": {
+      "name": "IslandFreebie.Share.name",
+      "help": "IslandFreebie.Share.help"
     }
   },
   "Daemon": {

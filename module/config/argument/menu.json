@@ -101,6 +101,7 @@
     "page": "setting",
     "tasks": [
       "IslandInfo",
+      "IslandFreebie",
       "IslandSeasonTask"
     ]
   },

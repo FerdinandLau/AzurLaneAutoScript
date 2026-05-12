@@ -262,6 +262,10 @@
       "name": "Task.IslandInfo.name",
       "help": "Task.IslandInfo.help"
     },
+    "IslandFreebie": {
+      "name": "每日補給",
+      "help": ""
+    },
     "IslandSeasonTask": {
       "name": "Task.IslandSeasonTask.name",
       "help": "Task.IslandSeasonTask.help"
@@ -2583,6 +2587,16 @@
     "TechnologyStatus": {
       "name": "IslandTechnology.TechnologyStatus.name",
       "help": "IslandTechnology.TechnologyStatus.help"
+    }
+  },
+  "IslandFreebie": {
+    "_info": {
+      "name": "每日補給",
+      "help": ""
+    },
+    "Share": {
+      "name": "共享補給",
+      "help": ""
     }
   },
   "Daemon": {

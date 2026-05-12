@@ -743,6 +743,8 @@ IslandTechnology:
   TechnologyStatus:
     type: textarea
     value: |-
+IslandFreebie:
+  Share: true
 
 # ==================== Tools ====================
 

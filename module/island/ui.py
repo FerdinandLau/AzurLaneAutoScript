@@ -1,5 +1,6 @@
 from module.base.button import ButtonGrid
 from module.base.decorator import cached_property
+from module.combat.assets import GET_ITEMS_1
 from module.island.assets import *
 from module.ui.navbar import Navbar
 from module.ui.scroll import Scroll
@@ -16,6 +17,28 @@ ISLAND_SEASON_TASK_SCROLL = Scroll(
 class IslandUI(UI):
     def ui_additional(self, get_ship=True):
         return super().ui_additional(get_ship=False)
+
+    def handle_island_get_items(self):
+        if self.appear(ISLAND_GET_ITEMS, offset=(20, 20), interval=3):
+            self.device.click(ISLAND_CLICK_SAFE_AREA)
+            return True
+        if self.appear(GET_ITEMS_1, offset=(20, 20), interval=3):
+            self.device.click(ISLAND_CLICK_SAFE_AREA)
+            return True
+        return False
+
+    def handle_island_level_up(self):
+        if self.appear(ISLAND_LEVEL_UP, offset=(20, 20), interval=3):
+            self.device.click(ISLAND_CLICK_SAFE_AREA)
+            return True
+        return False
+
+    def handle_island_additional(self):
+        if self.handle_island_get_items():
+            return True
+        if self.handle_island_level_up():
+            return True
+        return False
 
     @cached_property
     def _island_season_bottom_navbar(self):

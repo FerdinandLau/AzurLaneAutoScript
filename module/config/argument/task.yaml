@@ -333,6 +333,9 @@ Island:
     IslandInfo:
       - IslandSeasonTask
       - IslandTechnology
+    IslandFreebie:
+      - Scheduler
+      - IslandFreebie
     IslandSeasonTask:
       - Scheduler
 
