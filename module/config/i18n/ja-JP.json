@@ -266,6 +266,10 @@
       "name": "Task.IslandFreebie.name",
       "help": "Task.IslandFreebie.help"
     },
+    "IslandCollect": {
+      "name": "Task.IslandCollect.name",
+      "help": "Task.IslandCollect.help"
+    },
     "IslandSeasonTask": {
       "name": "Task.IslandSeasonTask.name",
       "help": "Task.IslandSeasonTask.help"

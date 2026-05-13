@@ -266,6 +266,10 @@
       "name": "每日補給",
       "help": ""
     },
+    "IslandCollect": {
+      "name": "每日採集",
+      "help": ""
+    },
     "IslandSeasonTask": {
       "name": "Task.IslandSeasonTask.name",
       "help": "Task.IslandSeasonTask.help"

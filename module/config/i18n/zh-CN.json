@@ -266,6 +266,10 @@
       "name": "每日补给",
       "help": ""
     },
+    "IslandCollect": {
+      "name": "每日采集",
+      "help": ""
+    },
     "IslandSeasonTask": {
       "name": "赛季任务",
       "help": ""

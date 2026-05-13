@@ -263,7 +263,11 @@
       "help": "Task.IslandInfo.help"
     },
     "IslandFreebie": {
-      "name": "Daily Supplement",
+      "name": "Daily Supplyment",
+      "help": ""
+    },
+    "IslandCollect": {
+      "name": "Daily Collect",
       "help": ""
     },
     "IslandSeasonTask": {

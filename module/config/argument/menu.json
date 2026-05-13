@@ -102,6 +102,7 @@
     "tasks": [
       "IslandInfo",
       "IslandFreebie",
+      "IslandCollect",
       "IslandSeasonTask"
     ]
   },
