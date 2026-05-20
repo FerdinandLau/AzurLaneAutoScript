@@ -270,6 +270,14 @@
       "name": "岛屿信息",
       "help": "岛屿仪表盘"
     },
+    "IslandFreebie": {
+      "name": "每日补给",
+      "help": ""
+    },
+    "IslandCollect": {
+      "name": "每日采集",
+      "help": ""
+    },
     "IslandSeasonTask": {
       "name": "赛季任务",
       "help": ""
@@ -2674,6 +2682,16 @@
     "TechnologyStatus": {
       "name": "科技列表",
       "help": "Alas会自动导出列表"
+    }
+  },
+  "IslandFreebie": {
+    "_info": {
+      "name": "每日补给",
+      "help": ""
+    },
+    "Share": {
+      "name": "分享补给",
+      "help": ""
     }
   },
   "Daemon": {

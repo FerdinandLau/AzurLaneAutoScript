@@ -350,6 +350,11 @@ Island:
     IslandInfo:
       - IslandSeasonTask
       - IslandTechnology
+    IslandFreebie:
+      - Scheduler
+      - IslandFreebie
+    IslandCollect:
+      - Scheduler
     IslandSeasonTask:
       - Scheduler
 

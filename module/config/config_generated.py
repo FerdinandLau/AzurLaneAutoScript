@@ -462,6 +462,9 @@ class GeneratedConfig:
     # Group `IslandTechnology`
     IslandTechnology_TechnologyStatus = None
 
+    # Group `IslandFreebie`
+    IslandFreebie_Share = True
+
     # Group `Daemon`
     Daemon_EnterMap = True
 

@@ -2040,6 +2040,35 @@
       "Storage": {}
     }
   },
+  "IslandFreebie": {
+    "Scheduler": {
+      "Enable": false,
+      "NextRun": "2020-01-01 00:00:00",
+      "Command": "IslandFreebie",
+      "SuccessInterval": 0,
+      "FailureInterval": 120,
+      "ServerUpdate": "00:00"
+    },
+    "IslandFreebie": {
+      "Share": true
+    },
+    "Storage": {
+      "Storage": {}
+    }
+  },
+  "IslandCollect": {
+    "Scheduler": {
+      "Enable": false,
+      "NextRun": "2020-01-01 00:00:00",
+      "Command": "IslandCollect",
+      "SuccessInterval": 0,
+      "FailureInterval": 120,
+      "ServerUpdate": "03:00, 18:00"
+    },
+    "Storage": {
+      "Storage": {}
+    }
+  },
   "IslandSeasonTask": {
     "Scheduler": {
       "Enable": false,
