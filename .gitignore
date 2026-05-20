@@ -19,6 +19,8 @@ config/reloadflag
 config/reloadalas
 test.py
 test/
+sync*
+alas.txt.lnk
 
 # Created by .ignore support plugin (hsz.mobi)
 
