@@ -456,6 +456,15 @@ class GeneratedConfig:
     OpsiCheckLeveling_LastRun = datetime.datetime(2020, 1, 1, 0, 0)
     OpsiCheckLeveling_DelayAfterFull = False
 
+    # Group `IslandSeasonTask`
+    IslandSeasonTask_TaskDict = None
+
+    # Group `IslandTechnology`
+    IslandTechnology_TechnologyStatus = None
+
+    # Group `IslandFreebie`
+    IslandFreebie_Share = True
+
     # Group `Daemon`
     Daemon_EnterMap = True
 

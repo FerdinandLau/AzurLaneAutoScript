@@ -342,6 +342,23 @@ Opsi:
     OpsiCrossMonth:
       - Scheduler
 
+# =================== Island ===================
+Island:
+  menu: 'collapse'
+  page: 'setting'
+  tasks:
+    IslandInfo:
+      - IslandSeasonTask
+      - IslandTechnology
+    IslandFreebie:
+      - Scheduler
+      - IslandFreebie
+    IslandCollect:
+      - Scheduler
+    IslandSeasonTask:
+      - Scheduler
+
+
 # ==================== Tool ====================
 
 Tool:
