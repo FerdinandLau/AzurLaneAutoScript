@@ -1,5 +1,7 @@
 import yaml
 
+from module.base.utils import random_rectangle_point, point2str
+from module.device.method.utils import HierarchyButton
 from module.equipment.assets import *
 from module.logger import logger
 from module.retire.assets import TEMPLATE_BOGUE, TEMPLATE_HERMES, TEMPLATE_RANGER, TEMPLATE_LANGLEY
@@ -111,13 +113,48 @@ class EquipmentCodeHandler(StorageHandler):
         else:
             return False
 
+    def fastinput_ime_enable(self):
+        self.device.adb_shell(['am', 'start', '-a', 'android.settings.INPUT_METHOD_SETTINGS'])
+        while 1:
+            h = self.device.dump_hierarchy_adb()
+
+            def appear(xpath):
+                return bool(HierarchyButton(h, xpath))
+
+            def appear_then_click(xpath):
+                b = HierarchyButton(h, xpath)
+                if b:
+                    point = random_rectangle_point(b.button)
+                    logger.info(f'Click {point2str(*point)} @ {b}')
+                    self.device.click_adb(*point)
+                    return True
+                else:
+                    return False
+
+            if appear_then_click('//*[@resource-id="android:id/title" and @text="FastInputIME"]/following-sibling::*[@resource-id="android:id/switch_widget" and @checked="false"]'):
+                continue
+            if appear_then_click('//*[@resource-id="android:id/button1"]'):
+                continue
+            # Disable one other enabled IME at a time
+            if appear_then_click('(//*[@resource-id="android:id/title" and @text!="FastInputIME"]/following-sibling::*[@resource-id="android:id/switch_widget" and @enabled="true" and @checked="true"])[1]'):
+                continue
+            if appear('//*[@resource-id="android:id/title" and @text="FastInputIME"]/following-sibling::*[@resource-id="android:id/switch_widget" and @checked="true"]') \
+                    and not appear('//*[@resource-id="android:id/title" and @text!="FastInputIME"]/following-sibling::*[@resource-id="android:id/switch_widget" and @enabled="true" and @checked="true"]'):
+                break
+
+        self.device.adb_shell(['input', 'keyevent', '4'])
+
     def _code_input(self, code):
         logger.info(f"Code input: {code}")
         d = self.device.u2
         for _ in self.loop(timeout=10):
-            _, shown = d.current_ime()
+            name, shown = d.current_ime()
             if shown:
-                break
+                if name != 'com.github.uiautomator/.FastInputIME':
+                    self.fastinput_ime_enable()
+                    continue
+                else:
+                    break
             self.device.click(EQUIPMENT_CODE_TEXTBOX)
         else:
             logger.warning("Equipment code load failed")
