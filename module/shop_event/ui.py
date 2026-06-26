@@ -119,6 +119,13 @@ class EventShopUI(UI):
             if ensure_timeout.reached():
                 raise GameStuckError('Waiting too long for EventShop to appear.')
         return True
+    
+    @cached_property
+    def is_pt_reversed(self):
+        blacklist = [
+            SHOP_EVENT_20240521
+        ]
+        return self.ui_process_check_button(check_button=blacklist)
 
     def event_shop_get_pt(self):
         if self.is_pt_reversed:
