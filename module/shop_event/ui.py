@@ -119,13 +119,6 @@ class EventShopUI(UI):
             if ensure_timeout.reached():
                 raise GameStuckError('Waiting too long for EventShop to appear.')
         return True
-    
-    @cached_property
-    def is_pt_reversed(self):
-        return self.config.cross_get('Event.Campaign.Event') in [
-            'event_20231221_cn',
-            'event_20240521_cn',
-        ]
 
     def event_shop_get_pt(self):
         if self.is_pt_reversed:
