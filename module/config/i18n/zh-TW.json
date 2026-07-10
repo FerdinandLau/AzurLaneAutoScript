@@ -91,7 +91,7 @@
       "help": ""
     },
     "Coalition": {
-      "name": "光影風尚-拍攝進行時",
+      "name": "極地風暴",
       "help": ""
     },
     "MaritimeEscort": {
@@ -131,7 +131,7 @@
       "help": ""
     },
     "CoalitionSp": {
-      "name": "光影風尚-拍攝進行時SP",
+      "name": "極地風暴SP",
       "help": ""
     },
     "Commission": {
@@ -812,7 +812,7 @@
       "event_20260326_cn": "漫遊者招募計劃",
       "event_20260417_cn": "假日航線閃耀海濱",
       "event_20260520_cn": "聖印前的同盟",
-      "event_20260625_cn": "Miracle by Midnight",
+      "event_20260625_cn": "美夢巡演奇秒夜",
       "raid_20200624": "特別演習埃塞克斯級(復刻)",
       "raid_20210708": "復刻穿越彼方的水線",
       "raid_20220127": "演習神秘事件調查",
@@ -1406,10 +1406,11 @@
     "Mode": {
       "name": "難度",
       "help": "SP圖需要使用活動每日SP運行",
-      "easy": "easy",
-      "normal": "normal",
-      "hard": "hard",
-      "sp": "sp"
+      "tc1": "tc1",
+      "tc2": "tc2",
+      "tc3": "tc3",
+      "sp": "sp",
+      "ex": "ex"
     },
     "Fleet": {
       "name": "出擊隊伍",
@@ -1524,7 +1525,7 @@
       "help": ""
     },
     "Favorite": {
-      "name": "優先選擇常用",
+      "name": "僅選擇常用角色",
       "help": ""
     },
     "MinLevel": {
@@ -1569,6 +1570,9 @@
       "name": "科研過濾器",
       "help": "科研掉落和項目刷新見 https://azur-stats.lyoko.io/，對這些沒有基本了解的人不建議編寫自定義過濾器，建議使用預優化科研過濾器",
       "custom": "自定義",
+      "series_9_blueprint_ta152": "九期 藍圖+Ta152",
+      "series_9_blueprint_only": "九期 僅藍圖",
+      "series_9_ta152_only": "九期 僅Ta152",
       "series_8_blueprint_305": "八期 藍圖+305",
       "series_8_blueprint_only": "八期 僅藍圖",
       "series_8_305_only": "八期 僅305",
@@ -1647,6 +1651,10 @@
     "FortChoreMeowfficer": {
       "name": "喵窩互動",
       "help": "清掃、餵食和逗貓"
+    },
+    "OverflowCoins": {
+      "name": "金幣溢出時購買貓箱",
+      "help": "當金幣高於此值時，繼續購買貓箱直至金幣降至此值或貓箱售罄；-1 關閉"
     }
   },
   "MeowfficerTrain": {
@@ -2202,7 +2210,8 @@
       "sirius": "天狼星",
       "new_jersey": "紐澤西",
       "taihou": "大鳳",
-      "aegir": "埃吉爾"
+      "aegir": "埃吉爾",
+      "nakhimov": "纳希莫夫"
     }
   },
   "Daily": {
