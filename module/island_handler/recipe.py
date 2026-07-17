@@ -1,6 +1,5 @@
 from datetime import datetime
 import re
-import os
 
 import cv2
 from jellyfish import levenshtein_distance
@@ -11,7 +10,7 @@ import module.config.server as server
 from module.base.button import ButtonGrid
 from module.base.decorator import cached_property, del_cached_property
 from module.base.timer import Timer
-from module.base.utils import color_similarity_2d, extract_letters, random_rectangle_vector_opted, save_image
+from module.base.utils import color_similarity_2d, extract_letters, random_rectangle_vector_opted
 from module.exception import GameTooManyClickError
 from module.island.data import DIC_ISLAND_ITEM, DIC_ISLAND_RECIPE, DIC_ISLAND_SHOP_ITEM_TO_RECIPE, DIC_ISLAND_SLOT
 from module.island.utils import (
@@ -30,7 +29,6 @@ from module.island_handler.shop import IslandShop
 from module.logger import logger
 from module.map_detection.utils import Points
 from module.ocr.ocr import Digit, Duration, Ocr
-from module.statistics.item import Item, ItemGrid
 from module.ui.page import page_island, page_island_manage, page_island_shop
 
 
@@ -43,7 +41,6 @@ RECIPE_DELTA = (0, 149)
 RECIPE_DETECT_AREA = (181, 55, 460, 668)
 RECIPE_DRAG_AREA = (300, 55, 350, 668)
 RECIPE_ANCHOR_AREA = (58, 97, 96, 115)
-RECIPE_TEMPLATE_AREA = (36, 33, 36 + 64, 33 + 64)
 RECIPE_PRODUCT_NAME_AREA = (123, 23, 269, 46)
 RECIPE_PRODUCT_STOCK_AREA = (212, 92, 275, 110)
 if server.server == 'jp':
@@ -210,38 +207,6 @@ def recipe_product_name_to_recipe_id(name, slotcode=None):
     return corrected_id
 
 
-class IslandRecipeItem(Item):
-    IMAGE_SHAPE = RECIPE_SIZE
-
-
-class IslandRecipeGrid(ItemGrid):
-    item_class = IslandRecipeItem
-
-    def __init__(self, grid: ButtonGrid):
-        super().__init__(
-            grids = grid,
-            templates = {},
-            template_area = RECIPE_TEMPLATE_AREA,
-            # amount_area = RECIPE_PRODUCT_STOCK_AREA
-        )
-        # self.amount_ocr = RECIPE_PRODUCT_STOCK_OCR
-        if not os.path.exists('./assets/island/recipe'):
-            os.makedirs('./assets/island/recipe')
-        self.load_template_folder('./assets/island/recipe')
-
-    def predict(self, image, name=True, amount=False, cost=False, price=False, tag=False):
-        super().predict(image, name=True, amount=False, cost=False, price=False, tag=False)
-        # product_name_grid = self.grids.crop(RECIPE_PRODUCT_NAME_AREA, name='RECIPE_PRODUCT_NAME_GRID')
-        # product_name_images = [self.image_crop(button.area, copy=True) for button in product_name_grid.buttons]
-        # product_names = RECIPE_PRODUCT_NAME_OCR.ocr(product_name_images, direct_ocr=True)
-        # corrected_ids = [recipe_product_name_to_recipe_id(name, slotcode=self.working_slot_id) for name in product_names]
-        # for item, corrected_id in zip(self.items, corrected_ids):
-        #     if item.name.isdigit() and corrected_id is not None:
-        #         logger.info(f'Corrected recipe item id from {item.id} to {corrected_id}')
-        #         item.id = corrected_id
-        #         item.name = DIC_ISLAND_ITEM[get_recipe_product_id(corrected_id)]['name']['en'].replace(' ', '_')
-        #         save_image(self.image_crop(item.area, copy=True), f'./assets/island/recipe/{item.name}.png')
-
 class IslandRecipe(IslandShop):
     working_slot_id = None
 
@@ -298,9 +263,6 @@ class IslandRecipe(IslandShop):
         product_name_images = [self.image_crop(button.area, copy=True) for button in product_name_grid.buttons]
         product_names = RECIPE_PRODUCT_NAME_OCR.ocr(product_name_images, direct_ocr=True)
         corrected_ids = [recipe_product_name_to_recipe_id(name, slotcode=self.working_slot_id) for name in product_names]
-        item_grid = IslandRecipeGrid(self.recipe_grid)
-        item_grid.extract_template(self.device.image, folder='./assets/island/recipe')
-        
         return corrected_ids
 
     def get_recipe_product_stocks(self):
@@ -314,7 +276,7 @@ class IslandRecipe(IslandShop):
             logger.info('Less than 3 recipes in current page, no need to swipe to next page')
             return
         else:
-            p1, p2 = random_rectangle_vector_opted((0, -250), box=RECIPE_DRAG_AREA, padding=0)
+            p1, p2 = random_rectangle_vector_opted((0, -300), box=RECIPE_DRAG_AREA, padding=0)
             self.device.drag(p1, p2, hold_duration=0.1, name='RECIPE_NEXT_PAGE_SWIPE')
             del_cached_property(self, 'recipe_grid')
             del_cached_property(self, 'recipe_ids')
@@ -325,7 +287,7 @@ class IslandRecipe(IslandShop):
             logger.info('Less than 3 recipes in current page, no need to swipe to previous page')
             return
         else:
-            p1, p2 = random_rectangle_vector_opted((0, 250), box=RECIPE_DRAG_AREA, padding=0)
+            p1, p2 = random_rectangle_vector_opted((0, 300), box=RECIPE_DRAG_AREA, padding=0)
             self.device.drag(p1, p2, hold_duration=0.1, name='RECIPE_PREV_PAGE_SWIPE')
             del_cached_property(self, 'recipe_grid')
             del_cached_property(self, 'recipe_ids')

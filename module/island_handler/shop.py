@@ -171,7 +171,11 @@ class IslandShop(IslandUI):
                 middle = 10*(q + 1) + 1
             return middle
 
-        ocr = Digit([ISLAND_SHOP_BUY_AMOUNT], letter=(57, 58, 60), threshold=160, name="island_shop_buy_amount_ocr")
+        if server.server == 'cn':
+            lang = 'cnocr'
+        else:
+            lang = 'azur_lane'
+        ocr = Digit([ISLAND_SHOP_BUY_AMOUNT], lang=lang, letter=(57, 58, 60), threshold=160, name="island_shop_buy_amount_ocr")
         def one_tenth_ocr(image):
             amount = ocr.ocr(image)
             return amount // 10
