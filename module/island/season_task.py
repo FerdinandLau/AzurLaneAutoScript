@@ -199,7 +199,7 @@ class IslandSeasonTask(IslandUI):
             if ISLAND_SEASON_TASK_SCROLL.at_bottom(main=self):
                 break
             else:
-                ISLAND_SEASON_TASK_SCROLL.next_page(main=self)
+                ISLAND_SEASON_TASK_SCROLL.next_page(main=self, skip_first_screenshot=False)
                 del_cached_property(self, 'season_task_grid')
                 del_cached_property(self, 'task_names')
                 continue

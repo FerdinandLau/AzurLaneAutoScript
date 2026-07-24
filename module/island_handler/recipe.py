@@ -40,7 +40,7 @@ RECIPE_SIZE = (280, 134)
 RECIPE_DELTA = (0, 149)
 RECIPE_DETECT_AREA = (181, 55, 460, 668)
 RECIPE_DRAG_AREA = (300, 55, 350, 668)
-RECIPE_ANCHOR_AREA = (58, 97, 96, 115)
+RECIPE_ANCHOR_AREA = (58, 97, 102, 115)
 RECIPE_PRODUCT_NAME_AREA = (123, 23, 269, 46)
 RECIPE_PRODUCT_STOCK_AREA = (212, 92, 275, 110)
 if server.server == 'jp':
@@ -50,7 +50,7 @@ elif server.server == 'en':
 else:
     lang = 'cnocr'
 RECIPE_PRODUCT_NAME_OCR = Ocr([], lang=lang, letter=(57, 59, 61), threshold=160, name='product_name_ocr')
-RECIPE_PRODUCT_STOCK_OCR = Digit([], lang='cnocr', letter=(57, 59, 61), threshold=160, name='product_stock_ocr')
+RECIPE_PRODUCT_STOCK_OCR = Digit([], lang='cnocr', letter=(80, 80, 80), threshold=160, name='product_stock_ocr')
 ISLAND_RECIPE_AMOUNT_OCR = Digit(ISLAND_RECIPE_AMOUNT, letter=(50, 50, 57), name='recipe_amount_ocr')
 
 
@@ -600,7 +600,7 @@ class IslandRecipe(IslandShop):
     def get_recipe_remain_time(self):
         if self.match_template_color(ISLAND_RECIPE_TIME_ANCHOR, offset=(100, 20)):
             ISLAND_RECIPE_TIME.load_offset(ISLAND_RECIPE_TIME_ANCHOR)
-            remain_time = Duration(ISLAND_RECIPE_TIME.button, name='recipe_remain_time').ocr(self.device.image)
+            remain_time = Duration(ISLAND_RECIPE_TIME.button, lang='cnocr', name='recipe_remain_time').ocr(self.device.image)
             return remain_time
         else:
             logger.warning('Unable to find recipe time anchor, failed to execute recipe')

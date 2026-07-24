@@ -270,6 +270,9 @@ class IslandShop(IslandUI):
         return success
 
     def wait_island_shop_loading(self):
+        for _ in self.loop(timeout=1.5):
+            # poor implementation, shop anime has blinking effect of about 1.5 seconds
+            pass
         for _ in self.loop(timeout=5):
             if self.ui_page_appear(page_island_shop, offset=(0, 20)):
                 return True

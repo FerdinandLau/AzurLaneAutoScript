@@ -64,7 +64,7 @@ class RestaurantItemGrid(ItemGrid):
             amount_area=(38, 67, 83, 86),
             tag_area=(66, 2, 72, 5)
         )
-        self.amount_ocr = Digit([], threshold=160, name='Amount_ocr')
+        self.amount_ocr = Digit([], lang='cnocr', threshold=160, name='Amount_ocr')
         self.load_template_folder('./assets/island/restaurant')
 
     @staticmethod
@@ -158,10 +158,22 @@ class IslandRestaurant(IslandDock):
     def restaurant_has_event(self):
         return self.appear(ISLAND_RESTAURANT_EVENT_CHECK, offset=(20, 20))
 
+    # 364 and 214
+    @cached_property
+    def _restaurant_offset_x(self):
+        if self.restaurant_has_event:
+            return 150
+        else:
+            return 0
+
+    @cached_property
+    def _restaurant_offset(self):
+        return (self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20)
+
     def receive_revenue(self):
         confirm_timer = Timer(1, count=3)
         for _ in self.loop():
-            if self.appear_then_click(ISLAND_RESTAURANT_RECEIVE, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20), interval=2):
+            if self.appear_then_click(ISLAND_RESTAURANT_RECEIVE, offset=self._restaurant_offset, interval=2):
                 confirm_timer.reset()
                 continue
             if self.appear(ISLAND_RESTAURANT_RESULT, offset=(20, 20), interval=2):
@@ -172,18 +184,10 @@ class IslandRestaurant(IslandDock):
                 confirm_timer.reset()
                 continue
             # End
-            if (self.appear(ISLAND_RESTAURANT_RECOMMEND, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20))
-                    or self.appear(ISLAND_RESTAURANT_RESTING, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20))):
+            if (self.appear(ISLAND_RESTAURANT_RECOMMEND, offset=self._restaurant_offset)
+                    or self.restaurant_resting()):
                 if confirm_timer.reached():
                     return True
-
-    # 364 and 214
-    @cached_property
-    def _restaurant_offset_x(self):
-        if self.restaurant_has_event:
-            return 150
-        else:
-            return 0
 
     @cached_property
     def restaurant_grid(self):
@@ -193,7 +197,7 @@ class IslandRestaurant(IslandDock):
         )
 
     def swipe_top_to_bottom(self):
-        if not self.appear(ISLAND_RESTAURANT_SCROLL_TOP, offset=(self._restaurant_offset_x - 20, 0, self._restaurant_offset_x + 20, 0)):
+        if not self.appear(ISLAND_RESTAURANT_SCROLL_TOP, offset=self._restaurant_offset):
             return False
         box = (RESTAURANT_SWIPE_AREA[0] + self._restaurant_offset_x, RESTAURANT_SWIPE_AREA[1],
                RESTAURANT_SWIPE_AREA[2] + self._restaurant_offset_x, RESTAURANT_SWIPE_AREA[3])
@@ -203,7 +207,7 @@ class IslandRestaurant(IslandDock):
         return True
 
     def swipe_bottom_to_top(self):
-        if not self.appear(ISLAND_RESTAURANT_SCROLL_BOTTOM, offset=(self._restaurant_offset_x - 20, 0, self._restaurant_offset_x + 20, 0)):
+        if not self.appear(ISLAND_RESTAURANT_SCROLL_BOTTOM, offset=self._restaurant_offset):
             return False
         box = (RESTAURANT_SWIPE_AREA[0] + self._restaurant_offset_x, RESTAURANT_SWIPE_AREA[1],
                RESTAURANT_SWIPE_AREA[2] + self._restaurant_offset_x, RESTAURANT_SWIPE_AREA[3])
@@ -343,8 +347,11 @@ class IslandRestaurant(IslandDock):
         lst = list(lst)
         return lst
 
+    def restaurant_running(self):
+        return self.appear(ISLAND_RESTAURANT_RUNNING, offset=self._restaurant_offset)
+
     def restaurant_resting(self):
-        return self.appear(ISLAND_RESTAURANT_RESTING, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20))
+        return self.appear(ISLAND_RESTAURANT_RESTING, offset=self._restaurant_offset)
 
     def choose_waitress(self):
         waitress_list = self.waitress_lists[self.working_restaurant_id]
@@ -357,7 +364,7 @@ class IslandRestaurant(IslandDock):
         if unavailable_waitress_list:
             logger.warning(f"Unavailable waitress list: {unavailable_waitress_list}")
         for _ in self.loop():
-            if self.appear_then_click(ISLAND_RESTAURANT_SELECT_CHARACTER, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20), interval=2):
+            if self.appear_then_click(ISLAND_RESTAURANT_SELECT_CHARACTER, offset=self._restaurant_offset, interval=2):
                 continue
             if self.is_in_island_dock():
                 break
@@ -365,19 +372,20 @@ class IslandRestaurant(IslandDock):
         for waitress in waitress_list:
             if waitress != 'any':
                 candidate = self.island_dock_find_character(waitress)
-                if candidate and candidate.status == 'free':
+                if candidate is None:
+                    self.ensure_dock_page_at_top()
+                    success = self.island_dock_select_character_with_blacklist(self.unavailable_waitress_list) and success
+                elif candidate.status == 'free':
                     self.island_dock_select_one(candidate.button)
-                    success = success and True
                 else:
-                    if candidate and candidate.status != 'free':
-                        time_until_update = get_server_next_update("00:00") - datetime.now()
-                        if time_until_update > timedelta(hours=8):
-                            logger.warning(f"Waitress {waitress} not available, delaying restaurant {self.working_restaurant_id} for 8 hours")
-                            self.ui_back(check_button=self.is_in_island_restaurant)
-                            raise WaitressOccupied(f"Waitress {waitress} is occupied, delaying restaurant {self.working_restaurant_id} for 8 hours")
-                    else:
-                        # Less than 8 hours, find any available character instead
+                    time_until_update = get_server_next_update("00:00") - datetime.now()
+                    if time_until_update < timedelta(hours=8):
+                        self.ensure_dock_page_at_top()
                         success = self.island_dock_select_character_with_blacklist(self.unavailable_waitress_list) and success
+                    else:
+                        logger.warning(f"Waitress {waitress} not available, delaying restaurant {self.working_restaurant_id} for 8 hours")
+                        self.ui_back(check_button=self.is_in_island_restaurant)
+                        raise WaitressOccupied(f"Waitress {waitress} is occupied, delaying restaurant {self.working_restaurant_id} for 8 hours")
             else:
                 success = self.island_dock_select_character_with_blacklist(self.unavailable_waitress_list) and success
         if not success:
@@ -425,12 +433,17 @@ class IslandRestaurant(IslandDock):
 
     def restaurant_start(self):
         for _ in self.loop():
-            if self.appear_then_click(ISLAND_RESTAURANT_START, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20), interval=2):
+            if self.handle_island_additional():
                 continue
-            if self.appear(ISLAND_RESTAURANT_RUNNING, offset=(self._restaurant_offset_x - 20, -20, self._restaurant_offset_x + 20, 20)):
+            if self.appear_then_click(ISLAND_RESTAURANT_START, offset=self._restaurant_offset, interval=2):
+                continue
+            if self.restaurant_running():
                 return True
 
     def run(self):
+        if self.restaurant_running():
+            logger.info("Restaurant is already running, skip this round")
+            return False
         self.receive_revenue()
         if self.restaurant_resting():
             logger.info("Restaurant is resting, finish this round")

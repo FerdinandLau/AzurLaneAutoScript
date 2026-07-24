@@ -185,6 +185,7 @@ class IslandBusiness(IslandRestaurant):
             del_cached_property(super(), '_restaurant_offset_x')
             del_cached_property(super(), 'restaurant_grid')
             del_cached_property(super(), 'event_buff')
+            del_cached_property(super(), '_restaurant_offset')
             if restaurant_id in unchecked_restaurants:
                 unchecked_restaurants.remove(restaurant_id)
             if success:
