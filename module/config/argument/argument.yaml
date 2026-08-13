@@ -315,8 +315,10 @@ RaidDaily:
     hard > normal > easy
 Hospital:
   UseRecommendFleet: true
-MaritimeEscort:
-  Enable: true
+Scuttle:
+  Sacrifice:
+    value: vanguard
+    option: [ vanguard, flagship ]
 Coalition:
   Mode:
     value: hard
@@ -735,7 +737,7 @@ OpsiShop:
       - all
       - custom
   CustomFilter: |-
-    LoggerAbyssalT6 > LoggerAbyssalT5 > LoggerObscure > LoggerAbyssalT4 > ActionPoint > PurpleCoins
+    LoggerAbyssalT6 > LoggerAbyssalT5 > LoggerAbyssalT4 > LoggerObscureT6 > LoggerObscureT5 > LoggerObscureT4 > LoggerObscureT3 > ActionPoint > PurpleCoins
     > GearDesignPlanT3 > PlateRandomT4 > DevelopmentMaterialT3 > GearDesignPlanT2 > GearPart
     > OrdnanceTestingReportT3 > OrdnanceTestingReportT2 > DevelopmentMaterialT2 > OrdnanceTestingReportT1
     > METARedBook > CrystallizedHeatResistantSteel > NanoceramicAlloy > NeuroplasticProstheticArm > SupercavitationGenerator
@@ -780,10 +782,6 @@ IslandProduction:
     type: textarea
     value: |-
       {}
-  RequestBufferItems:
-    type: textarea
-    value: |-
-      {}
   DailyBufferItems:
     type: textarea
     value: |-
@@ -800,9 +798,12 @@ IslandRestaurant:
   KoiGrade:
     value: bronze
     option: [ bronze, silver, gold, diamond ]
-  KoiWaitress:
+  KoiWaitress1: &KoiWaitressSlot
     value: any
-    option: [ none, any, Chao_Ho, any+any, Chao_Ho+any ]
+    option: &KoiWaitressOptions [ none, any, Chao_Ho, Chang_Feng ]
+  KoiWaitress2:
+    <<: *KoiWaitressSlot
+    value: none
   KoiMenu:
     type: textarea
     value: |-
@@ -810,9 +811,12 @@ IslandRestaurant:
   BearGrade:
     value: bronze
     option: [ bronze, silver, gold, diamond ]
-  BearWaitress:
+  BearWaitress1: &BearWaitressSlot
     value: any
-    option: [ none, any, Cheshire, any+any, Cheshire+any ]
+    option: &BearWaitressOptions [ none, any, Cheshire, Chang_Feng ]
+  BearWaitress2:
+    <<: *BearWaitressSlot
+    value: none
   BearMenu:
     type: textarea
     value: |-
@@ -820,9 +824,12 @@ IslandRestaurant:
   EateryGrade:  
     value: bronze
     option: [ bronze, silver, gold, diamond ]
-  EateryWaitress:
+  EateryWaitress1: &EateryWaitressSlot
     value: any
-    option: [ none, any, Helena, Prinz_Eugen, any+any, Helena+any, Prinz_Eugen+any, Helena+Prinz_Eugen ]
+    option: &EateryWaitressOptions [ none, any, Helena, Prinz_Eugen, Chang_Feng ]
+  EateryWaitress2:
+    <<: *EateryWaitressSlot
+    value: none
   EateryMenu:
     type: textarea
     value: |-
@@ -830,9 +837,12 @@ IslandRestaurant:
   GrillGrade:
     value: bronze
     option: [ bronze, silver, gold, diamond ]
-  GrillWaitress:
+  GrillWaitress1: &GrillWaitressSlot
     value: any
-    option: [ none, any, August_von_Parseval, Prinz_Eugen, any+any, August_von_Parseval+any, Prinz_Eugen+any, August_von_Parseval+Prinz_Eugen ]
+    option: &GrillWaitressOptions [ none, any, August_von_Parseval, Prinz_Eugen, Chang_Feng ]
+  GrillWaitress2:
+    <<: *GrillWaitressSlot
+    value: none
   GrillMenu:
     type: textarea
     value: |-
@@ -840,9 +850,12 @@ IslandRestaurant:
   CafeGrade:
     value: bronze
     option: [ bronze, silver, gold, diamond ]
-  CafeWaitress:
+  CafeWaitress1: &CafeWaitressSlot
     value: any
-    option: [ none, any, Cheshire, any+any, Cheshire+any ]
+    option: &CafeWaitressOptions [ none, any, Cheshire, Belfast, Chang_Feng ]
+  CafeWaitress2:
+    <<: *CafeWaitressSlot
+    value: none
   CafeMenu:
     type: textarea
     value: |-

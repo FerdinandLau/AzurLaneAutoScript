@@ -5,6 +5,11 @@ from module.base.decorator import cached_property, del_cached_property
 from module.config.utils import get_server_next_update
 from module.island.assets import *
 from module.island_handler.restaurant import IslandRestaurant, WaitressOccupied
+from module.island_handler.restaurant_config import (
+    RESTAURANT_IDS,
+    get_waitress_slots,
+    is_restaurant_enabled,
+)
 from module.logger import logger
 from module.ocr.ocr import Duration
 from module.ui.page import page_island_manage
@@ -17,14 +22,12 @@ BUSINESS_ENTRANCE_AREA = (794, 84, 950, 120)
 class IslandBusiness(IslandRestaurant):
     @cached_property
     def skip_restaurant(self):
-        open = {
-            601: self.has_waitress("IslandBusiness.IslandRestaurant.KoiWaitress", 'none'),
-            602: self.has_waitress("IslandBusiness.IslandRestaurant.BearWaitress", 'none'),
-            603: self.has_waitress("IslandBusiness.IslandRestaurant.EateryWaitress", 'none'),
-            604: self.has_waitress("IslandBusiness.IslandRestaurant.GrillWaitress", 'none'),
-            901: self.has_waitress("IslandBusiness.IslandRestaurant.CafeWaitress", 'none')
+        return {
+            restaurant_id: not is_restaurant_enabled(
+                get_waitress_slots(self.config, restaurant_id)
+            )
+            for restaurant_id in RESTAURANT_IDS
         }
-        return open
 
     @property
     def business_grid(self):
@@ -97,11 +100,16 @@ class IslandBusiness(IslandRestaurant):
     def get_remain_time(self, button):
         time_button = button.crop((851, 11, 913, 38))
         ocr = Duration(time_button, name="RESTAURANT_REMAIN_TIME")
-        remain_time = ocr.ocr(self.device.image)
-        return remain_time
+        for _ in self.loop(timeout=3):
+            remain_time = ocr.ocr(self.device.image)
+            if isinstance(remain_time, timedelta) and remain_time.total_seconds() > 0:
+                return remain_time
+        else:
+            logger.warning("Failed to recognize remain time, assuming restaurant is running for 8 hours")
+            return timedelta(hours=8)
 
-    index = None
-    shifted = None
+    index = 0
+    shifted = False
 
     def current_restaurant_button(self):
         if self.shifted:
@@ -120,11 +128,15 @@ class IslandBusiness(IslandRestaurant):
             logger.info("No more restaurants")
 
     def run(self):
+        if self.config.SERVER in ['tw']:
+            logger.info(f'IslandBusiness is not available on {self.config.SERVER} server, delay until next server update')
+            self.config.task_delay(server_update=True)
+            return
         self.ui_ensure(page_island_manage)
         self.island_manage_side_navbar_ensure(upper=2)
         self.handle_restaurant_popup()
         self.restaurant_swipe_to_top()
-        unchecked_restaurants = [601, 602, 603, 604, 901]
+        unchecked_restaurants = list(RESTAURANT_IDS)
         next_run_time = {
             601: get_server_next_update('00:00') if not self.skip_restaurant[601] else datetime.now() + timedelta(days=3),
             602: get_server_next_update('00:00') if not self.skip_restaurant[602] else datetime.now() + timedelta(days=3),
@@ -153,7 +165,7 @@ class IslandBusiness(IslandRestaurant):
                 continue
             if self.is_restaurant_running(entrance_button):
                 remain_time = self.get_remain_time(button)
-                next_run_time[restaurant_id] = datetime.now() + remain_time if remain_time else "Unknown"
+                next_run_time[restaurant_id] = datetime.now() + remain_time
                 logger.info(f"Restaurant {restaurant_id} is running")
                 unchecked_restaurants.remove(restaurant_id)
                 self.next_restaurant()

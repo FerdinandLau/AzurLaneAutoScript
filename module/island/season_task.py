@@ -21,7 +21,7 @@ DETECT_AREA = (42, 171, 1206, 604)
 ICON_AREA = (21, 133, 225, 195)
 TAB_DELTA = (395, 230)
 TAB_SIZE = (376, 211)
-NAME_AREA = (29, 18, 200, 48)
+NAME_AREA = (29, 18, 270, 48)
 ISLAND_SEASON_TASK_SCROLL = Scroll(
     ISLAND_SEASON_TASK_SCROLL_AREA.button,
     color=(128, 128, 128),
@@ -122,8 +122,6 @@ class IslandSeasonTask(IslandUI):
     def task_name_ocr(self):
         if server.server == 'jp':
             lang = 'jp'
-        elif server.server == 'en':
-            lang = 'azur_lane'
         else:
             lang = 'cnocr'
         ocr = Ocr([], lang=lang, letter=(57, 58, 60), name='task_name_ocr')
@@ -138,12 +136,17 @@ class IslandSeasonTask(IslandUI):
         return codenames
 
     def task_name_to_codename(self, name):
+        if not isinstance(name, str):
+            return None
         min_distance = float('inf')
         code = None
         corrected_name = None
         for key, item in DIC_ISLAND_TASK.items():
+            if item['start_time'] is None or item['end_time'] is None:
+                continue
             distance = levenshtein_distance(name, item['name'][server.server])
-            if distance < min_distance:
+            if distance <= min_distance:
+                # allow for multiple matches, but only keep the closest one
                 min_distance = distance
                 code = key
                 corrected_name = item['name'][server.server]
@@ -191,8 +194,12 @@ class IslandSeasonTask(IslandUI):
                 if TEMPLATE_ISLAND_SEASON_TASK_OBTAINED.match(image):
                     early_stop = True
                     break
+                if task_id is None:
+                    logger.warning('Unable to identify season task, skip it')
+                    continue
                 else:
-                    unfinished_tasks.append(task_id)
+                    if task_id not in unfinished_tasks:
+                        unfinished_tasks.append(task_id)
             if early_stop:
                 logger.info(f'Detect obtained task, early stop scanning')
                 break
@@ -207,6 +214,10 @@ class IslandSeasonTask(IslandUI):
         return unfinished_tasks
 
     def run(self):
+        if self.config.SERVER in ['tw']:
+            logger.info(f'IslandSeasonTask is not available on {self.config.SERVER} server, delay until next server update')
+            self.config.task_delay(server_update=True)
+            return
         self.ui_ensure(page_island_season)
         self.island_season_bottom_navbar_ensure(left=3)
         self.receive_all_reward()

@@ -74,12 +74,6 @@ Event:
     EventGeneral:
       - EventGeneral
       - TaskBalancer
-    Coalition:
-      - Scheduler
-      - Campaign
-      - Coalition
-      - StopCondition
-      - Emotion
     Event:
       - Scheduler
       - Campaign
@@ -106,9 +100,18 @@ Event:
       - Emotion
     RaidScuttle:
       - Scheduler
-      - RaidScuttle
+      - Scuttle
       - Raid
       - Campaign
+      - StopCondition
+      - Fleet
+      - Submarine
+      - Emotion
+    CoalitionScuttle:
+      - Scheduler
+      - Scuttle
+      - Campaign
+      - Coalition
       - StopCondition
       - Fleet
       - Submarine
@@ -118,9 +121,12 @@ Event:
       - Hospital
       - StopCondition
       - Emotion
-    MaritimeEscort:
+    Coalition:
       - Scheduler
-      - MaritimeEscort
+      - Campaign
+      - Coalition
+      - StopCondition
+      - Emotion
     EventShop:
       - Scheduler
       - EventShop
@@ -141,12 +147,6 @@ EventDaily:
   menu: 'collapse'
   page: 'setting'
   tasks:
-    CoalitionSp:
-      - Scheduler
-      - Campaign
-      - Coalition
-      - StopCondition
-      - Emotion
     EventA:
       - Scheduler
       - EventDaily
@@ -200,6 +200,12 @@ EventDaily:
       - Scheduler
       - RaidDaily
       - Campaign
+      - StopCondition
+      - Emotion
+    CoalitionSp:
+      - Scheduler
+      - Campaign
+      - Coalition
       - StopCondition
       - Emotion
 

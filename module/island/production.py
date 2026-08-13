@@ -1,12 +1,10 @@
 from datetime import datetime
 
-from jellyfish import levenshtein_distance
-
-import module.config.server as server
 from module.base.button import ButtonGrid
 from module.base.decorator import cached_property, del_cached_property, has_cached_property
 from module.base.timer import Timer
 from module.base.utils import random_rectangle_vector_opted
+from module.exception import RequestHumanTakeover
 from module.island.assets import *
 from module.island.data import DIC_ISLAND_PRODUCTION_PLACE
 from module.island_handler.dock import IslandDock
@@ -14,13 +12,12 @@ from module.island_handler.dock_scanner import CharacterScanner
 from module.island_handler.recipe import IslandProductionRestart, IslandRecipe
 from module.logger import logger
 from module.map_detection.utils import Points
-from module.ocr.ocr import Ocr
-from module.ui.page import page_island_manage
+from module.ui.page import page_island, page_island_manage
 
 
 ANCHOR_AREA = (452, 7, 481, 36)
 DETECT_AREA = (192, 69, 1221, 653)
-NAME_AREA = (0, 0, 240, 39)
+NAME_AREA = (0, 0, 265, 39)
 TAB_SIZE = (490, 159)
 TAB_DELTA = (539, 183.5)
 SLOT_ORIGIN = (62, 59)
@@ -28,13 +25,6 @@ SLOT_SIZE = (86, 86)
 SLOT_DELTA = (95 - 1/3, 0)
 TICK_AREA = (30, 35, 52, 51)
 CHARACTER_SELECT_TITLE_AREA = (515, 144, 765, 202)
-if server.server == 'jp':
-    lang = 'jp'
-elif server.server == 'en':
-    lang = 'azur_lane'
-else:
-    lang = 'cnocr'
-PRODUCTION_NAME_OCR = Ocr([], lang=lang, name='production_name_ocr')
 
 
 class IslandProduction(IslandRecipe, IslandDock):
@@ -84,26 +74,37 @@ class IslandProduction(IslandRecipe, IslandDock):
         return self.get_production_codename()
 
     def get_production_codename(self):
+        template_to_codename = {
+            TEMPLATE_ISLAND_PRODUCTION_FIELD: 101,
+            TEMPLATE_ISLAND_PRODUCTION_RANCH: 102,
+            TEMPLATE_ISLAND_PRODUCTION_FISHERY: 201,
+            TEMPLATE_ISLAND_PRODUCTION_MINE: 401,
+            TEMPLATE_ISLAND_PRODUCTION_WOOD: 402,
+            TEMPLATE_ISLAND_PRODUCTION_ORCHARD: 501,
+            TEMPLATE_ISLAND_PRODUCTION_NURSERY: 502,
+            TEMPLATE_ISLAND_PRODUCTION_KOI: 601,
+            TEMPLATE_ISLAND_PRODUCTION_BEAR: 602,
+            TEMPLATE_ISLAND_PRODUCTION_EATERY: 603,
+            TEMPLATE_ISLAND_PRODUCTION_GRILL: 604,
+            TEMPLATE_ISLAND_PRODUCTION_LUMBER: 703,
+            TEMPLATE_ISLAND_PRODUCTION_MACHINERY: 704,
+            TEMPLATE_ISLAND_PRODUCTION_ELECTRONIC: 705,
+            TEMPLATE_ISLAND_PRODUCTION_CRAFTS: 706,
+            TEMPLATE_ISLAND_PRODUCTION_CAFE: 901,
+        }
         name_grid = self.production_grid.crop(NAME_AREA, name='PRODUCTION_NAME_GRID')
         name_images = [self.image_crop(button.area, copy=True) for button in name_grid.buttons]
-        names = PRODUCTION_NAME_OCR.ocr(name_images, direct_ocr=True)
-        codenames = [self.production_name_to_codename(name) for name in names]
+        codenames = []
+        for image in name_images:
+            for template, codename in template_to_codename.items():
+                if template.match(image):
+                    codenames.append(codename)
+                    break
+            else:
+                logger.warning('Failed to recognize production name')
+                codenames.append(None)
         logger.attr('Codenames', codenames)
         return codenames
-
-    def production_name_to_codename(self, name):
-        min_distance = float('inf')
-        code = None
-        corrected_name = None
-        for key, item in DIC_ISLAND_PRODUCTION_PLACE.items():
-            distance = levenshtein_distance(name, item['name'][server.server])
-            if distance < min_distance:
-                min_distance = distance
-                code = key
-                corrected_name = item['name'][server.server]
-        if name != corrected_name:
-            logger.info(f'Production name OCR result "{name}" corrected to "{corrected_name}" with distance {min_distance}')
-        return code
 
     @cached_property
     def slot_grids(self):
@@ -113,6 +114,9 @@ class IslandProduction(IslandRecipe, IslandDock):
         slot_grids = {}
         names = self.production_names
         for codename, button in zip(names, self.production_grid.buttons):
+            if codename not in DIC_ISLAND_PRODUCTION_PLACE:
+                logger.warning(f'Codename {codename} not found in DIC_ISLAND_PRODUCTION_PLACE, skip slot grid creation')
+                continue
             slot_length = len(DIC_ISLAND_PRODUCTION_PLACE[codename]['slot'])
             slot_grid = ButtonGrid(
                 origin=(button.area[0] + SLOT_ORIGIN[0], button.area[1] + SLOT_ORIGIN[1]), delta=SLOT_DELTA, button_shape=SLOT_SIZE,
@@ -177,7 +181,7 @@ class IslandProduction(IslandRecipe, IslandDock):
                 continue
             if self.appear_then_click(ISLAND_PRODUCTION_RECEIVE, offset=(120, 20), interval=2):
                 continue
-            if self.ui_page_appear(page_island_manage, interval=2):
+            if self.ui_page_appear(page_island_manage, interval=2) and not self.is_enter_window_shown():
                 self.device.click(slot_button)
                 continue
             if self.is_enter_window_shown() and self.appear(ISLAND_PRODUCTION_SELECT_CHARACTER, offset=(60, 20)):
@@ -239,6 +243,9 @@ class IslandProduction(IslandRecipe, IslandDock):
                     return True
         else:
             logger.warning(f'Failed to start production for slot {slot_id}')
+            if slot_id in [9031, 9032, 9033, 9034]:
+                del_cached_property(super(), 'recipe_id_sequence')
+                del_cached_property(super(), 'all_recipe_stocks')
             self.ui_back(check_button=page_island_manage.check_button)
             self.ensure_island_production_page()
             return False
@@ -263,6 +270,7 @@ class IslandProduction(IslandRecipe, IslandDock):
     def dispatch_all(self):
         logger.hr("Dispatch Production", level=2)
         self.ensure_top_page()
+        self.failed_buy_items = set()
         dispatched_places = set()
         while 1:
             try:
@@ -272,7 +280,9 @@ class IslandProduction(IslandRecipe, IslandDock):
                         dispatched_places.add(place_id)
                 if not self.next_page():
                     break
-            except IslandProductionRestart:
+            except IslandProductionRestart as e:
+                if not e.success:
+                    self.failed_buy_items.add(e.item_id)
                 logger.info('Production restarted, continue from current page')
                 del_cached_property(self, 'production_grid')
                 del_cached_property(self, 'production_names')
@@ -285,12 +295,25 @@ class IslandProduction(IslandRecipe, IslandDock):
             if self.ui_page_appear(page_island_manage, offset=(0, 20)):
                 break
         self.island_manage_side_navbar_ensure(upper=1, skip_first_screenshot=False)
+        for _ in self.loop():
+            rows = self._get_tabs()
+            count = len(rows)
+            if count >= 2:
+                break
 
     def run(self):
+        if self.config.SERVER in ['tw']:
+            logger.info(f'IslandProduction is not available on {self.config.SERVER} server, delay until next server update')
+            self.config.task_delay(server_update=True)
+            return
         self.ensure_island_production_page()
         slot_finish_time = self.config.cross_get("IslandProduction.Storage.Storage.SlotFinishTime", default={})
         self.slot_finish_time = {int(k): datetime.fromisoformat(v) for k, v in slot_finish_time.items()}
         self.claim_all_rewards()
+        yaml_text = self.config.cross_get("IslandProduction.IslandProduction.DailyBufferItems", "")
+        if not yaml_text or yaml_text == "{}":
+            logger.critical('No daily buffer items found in config, please run Island Production Planner first')
+            raise RequestHumanTakeover('No daily buffer items found in config, please run Island Production Planner first')
         self.dispatch_all()
         next_run_time = list(self.slot_finish_time.values())
         with self.config.multi_set():

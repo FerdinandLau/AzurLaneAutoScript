@@ -92,10 +92,6 @@ def load_hard_floor_items(hard_floor_items_yaml=None):
     return load_item_mapping(hard_floor_items_yaml, config_name='HardFloorItems')
 
 
-def load_request_buffer_items(request_buffer_items_yaml=None):
-    return load_item_mapping(request_buffer_items_yaml, config_name='RequestBufferItems')
-
-
 def normalize_technology_status(technology_status=None):
     if not technology_status:
         return {}
@@ -238,12 +234,16 @@ def parse_item_need_deadlines(item_need, default_period=1):
     if isinstance(item_need, dict) and item_need.get('deadlines') and (
         'total_need_count' in item_need or 'rate_per_day' in item_need
     ):
+        fallback_period = item_need.get('period', default_period)
         return [
             (
                 int(deadline.get('count', deadline.get('total_need_count', 0))),
-                float(deadline.get('period', deadline.get('days', item_need['period']))),
+                float(deadline.get('period', deadline.get('days', fallback_period))),
             )
-            for deadline in sorted(item_need['deadlines'], key=lambda x: x['period'])
+            for deadline in sorted(
+                item_need['deadlines'],
+                key=lambda x: x.get('period', x.get('days', fallback_period)),
+            )
             if int(deadline.get('count', deadline.get('total_need_count', 0))) > 0
         ]
 
@@ -323,6 +323,18 @@ def get_target_stock_load_rate(stock, reserve, target_deadlines):
     if effective_stock >= target_stock:
         return 0
     return rate_per_day
+
+
+def get_production_target_stock(hard_floor, reserve, daily_buffer):
+    """Return the recipe replenishment target, including the soft daily buffer."""
+    return max(hard_floor, 0) + max(reserve, 0) + max(daily_buffer, 0)
+
+
+def get_order_effective_stock(stock, hard_floor, reserve=0, priority=False):
+    """Return stock available to an order under the current priority policy."""
+    if priority:
+        return stock
+    return stock - max(hard_floor, 0) - max(reserve, 0)
 
 
 def is_integer_value(value):
